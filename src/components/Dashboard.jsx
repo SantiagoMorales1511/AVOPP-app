@@ -6,6 +6,7 @@ import { format, isToday, isTomorrow, differenceInHours, differenceInDays } from
 import { es } from 'date-fns/locale'
 import NotificationSettings from './NotificationSettings'
 import MoodleSync from './MoodleSync'
+import { getPriorityColorByTime, getPriorityTextByTime } from '../services/priorityService'
 
 const Dashboard = () => {
   const { state, actions } = useApp()
@@ -30,13 +31,10 @@ const Dashboard = () => {
     completed: tasks.filter(task => task.completed).length
   }
 
-  const getPriorityColor = (priority) => {
-    switch (priority) {
-      case 'high': return 'text-danger-600 bg-danger-50'
-      case 'medium': return 'text-warning-600 bg-warning-50'
-      case 'low': return 'text-success-600 bg-success-50'
-      default: return 'text-gray-600 bg-gray-50'
-    }
+  const getTaskPriorityDisplay = (task) => {
+    const colors = getPriorityColorByTime(task.dueDate, task.completed)
+    const text = getPriorityTextByTime(task.dueDate, task.completed)
+    return { colors, text }
   }
 
   const getTypeIcon = (type) => {
@@ -85,33 +83,42 @@ const Dashboard = () => {
           </div>
         </div>
         
-        {notifications.slice(0, 3).map((notification) => (
-          <div key={notification.id} className={`card priority-${notification.priority} ${notification.read ? 'opacity-60' : ''}`}>
-            <div className="flex items-start justify-between">
-              <div className="flex-1">
-                <div className="flex items-center space-x-2 mb-1">
-                  {getTypeIcon(notification.type)}
-                  <span className="font-medium text-sm">{notification.title}</span>
-                  {!notification.read && <div className="w-2 h-2 bg-primary-600 rounded-full"></div>}
+        {notifications.slice(0, 3).map((notification) => {
+          // Si la notificación tiene dueDate, usar colores dinámicos
+          const priorityDisplay = notification.dueDate 
+            ? getTaskPriorityDisplay({ dueDate: notification.dueDate, completed: notification.read })
+            : { 
+                colors: { badge: `${notification.priority === 'high' ? 'bg-danger-100 text-danger-600' : notification.priority === 'medium' ? 'bg-warning-100 text-warning-600' : 'bg-success-100 text-success-600'}` },
+                text: notification.priority === 'high' ? 'Urgente' : notification.priority === 'medium' ? 'Importante' : 'Normal'
+              }
+          
+          return (
+            <div key={notification.id} className={`card ${notification.read ? 'opacity-60' : ''}`}>
+              <div className="flex items-start justify-between">
+                <div className="flex-1">
+                  <div className="flex items-center space-x-2 mb-1">
+                    {getTypeIcon(notification.type)}
+                    <span className="font-medium text-sm">{notification.title}</span>
+                    {!notification.read && <div className="w-2 h-2 bg-primary-600 rounded-full"></div>}
+                  </div>
+                  <p className="text-xs text-gray-600">{notification.course}</p>
+                  <p className="text-xs text-gray-500 mt-1">{notification.time}</p>
                 </div>
-                <p className="text-xs text-gray-600">{notification.course}</p>
-                <p className="text-xs text-gray-500 mt-1">{notification.time}</p>
-              </div>
-              <div className="flex flex-col items-end space-y-1">
-                <div className={`px-2 py-1 rounded-full text-xs font-medium ${getPriorityColor(notification.priority)}`}>
-                  {notification.priority === 'high' ? 'Urgente' : 
-                   notification.priority === 'medium' ? 'Importante' : 'Normal'}
+                <div className="flex flex-col items-end space-y-1">
+                  <div className={`px-2 py-1 rounded-full text-xs font-medium ${priorityDisplay.colors.badge}`}>
+                    {priorityDisplay.text}
+                  </div>
+                  <button
+                    onClick={() => actions.markNotificationRead(notification.id)}
+                    className="text-xs text-gray-400 hover:text-gray-600"
+                  >
+                    {notification.read ? 'Leído' : 'Marcar leído'}
+                  </button>
                 </div>
-                <button
-                  onClick={() => actions.markNotificationRead(notification.id)}
-                  className="text-xs text-gray-400 hover:text-gray-600"
-                >
-                  {notification.read ? 'Leído' : 'Marcar leído'}
-                </button>
               </div>
             </div>
-          </div>
-        ))}
+          )
+        })}
       </div>
 
       {/* Today's Schedule */}
