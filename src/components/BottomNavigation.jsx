@@ -1,10 +1,12 @@
-import { 
-  Home, 
-  Calendar, 
-  CheckSquare, 
-  BarChart3, 
-  Trophy, 
-  Users 
+import {
+  Home,
+  Calendar,
+  CheckSquare,
+  BarChart3,
+  Trophy,
+  Users,
+  Bell,
+  ClipboardList
 } from 'lucide-react'
 
 const BottomNavigation = ({ currentView, setCurrentView, userType }) => {
@@ -12,14 +14,18 @@ const BottomNavigation = ({ currentView, setCurrentView, userType }) => {
     { id: 'dashboard', label: 'Inicio', icon: Home },
     { id: 'daily', label: 'Hoy', icon: Calendar },
     { id: 'tasks', label: 'Tareas', icon: CheckSquare },
+    { id: 'notifications', label: 'Alertas', icon: Bell },
     { id: 'weekly', label: 'Semana', icon: BarChart3 },
     { id: 'challenges', label: 'Retos', icon: Trophy },
+    { id: 'report', label: 'Informe', icon: ClipboardList }
   ]
 
   const teacherNavItems = [
     { id: 'dashboard', label: 'Inicio', icon: Home },
     { id: 'teacher', label: 'Panel', icon: Users },
+    { id: 'notifications', label: 'Alertas', icon: Bell },
     { id: 'weekly', label: 'Reportes', icon: BarChart3 },
+    { id: 'report', label: 'Informe', icon: ClipboardList }
   ]
 
   const navItems = userType === 'student' ? studentNavItems : teacherNavItems

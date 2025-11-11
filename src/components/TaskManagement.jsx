@@ -8,6 +8,7 @@ import {
   getPriorityTextByTime,
   sortTasksByAutoPriority 
 } from '../services/priorityService'
+import SubtaskModal from './SubtaskModal'
 
 const TaskManagement = () => {
   const { state, actions } = useApp()
@@ -28,6 +29,7 @@ const TaskManagement = () => {
     manualPriority: null // null = automática, 'high'/'medium'/'low' = manual
   })
   const [showPriorityInfo, setShowPriorityInfo] = useState(false)
+  const [subtaskModalTask, setSubtaskModalTask] = useState(null)
 
   // Usar colores dinámicos basados en tiempo
   const getTaskPriorityDisplay = (task) => {
@@ -255,6 +257,11 @@ const TaskManagement = () => {
                       </h3>
                       <p className="text-xs text-gray-600 mt-1">{task.course}</p>
                       <p className="text-xs text-gray-500 mt-1">{task.description}</p>
+                      {(task.subtasks || []).length > 0 && (
+                        <p className="text-xs text-primary-600 mt-2">
+                          {task.subtasks.filter((s) => s.completed).length}/{task.subtasks.length} subtareas completadas
+                        </p>
+                      )}
                     </div>
                     
                     <div className="flex items-center space-x-2 ml-2">
@@ -282,6 +289,13 @@ const TaskManagement = () => {
                           className="p-1 text-gray-400 hover:text-primary-600 transition-colors"
                         >
                           <Edit size={14} />
+                        </button>
+                        <button
+                          onClick={() => setSubtaskModalTask(task)}
+                          className="p-1 text-gray-400 hover:text-primary-600 transition-colors"
+                          title="Administrar subtareas"
+                        >
+                          <CheckSquare size={14} />
                         </button>
                         <button
                           onClick={() => handleDeleteTask(task.id)}
@@ -478,6 +492,13 @@ const TaskManagement = () => {
             </div>
           </div>
         </div>
+      )}
+
+      {subtaskModalTask && (
+        <SubtaskModal
+          task={subtaskModalTask}
+          onClose={() => setSubtaskModalTask(null)}
+        />
       )}
     </div>
   )

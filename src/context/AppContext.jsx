@@ -22,7 +22,21 @@ const initialState = {
       completed: false,
       description: 'Desarrollar una aplicación web completa usando React y Node.js',
       createdAt: '2024-01-10',
-      fromMoodle: true
+      fromMoodle: true,
+      subtasks: [
+        {
+          id: 101,
+          title: 'Definir alcance del proyecto',
+          completed: true,
+          completedAt: '2024-01-12'
+        },
+        {
+          id: 102,
+          title: 'Configurar repositorio base',
+          completed: false,
+          completedAt: null
+        }
+      ]
     },
     {
       id: 2,
@@ -35,7 +49,15 @@ const initialState = {
       completed: false,
       description: 'Resolver 10 ejercicios de consultas SQL',
       createdAt: '2024-01-12',
-      fromMoodle: true
+      fromMoodle: true,
+      subtasks: [
+        {
+          id: 201,
+          title: 'Repasar joins',
+          completed: false,
+          completedAt: null
+        }
+      ]
     },
     {
       id: 3,
@@ -48,7 +70,8 @@ const initialState = {
       completed: true,
       description: 'Resolver problemas de derivadas',
       createdAt: '2024-01-08',
-      fromMoodle: false
+      fromMoodle: false,
+      subtasks: []
     }
   ],
   classes: [
@@ -158,6 +181,10 @@ const ActionTypes = {
   UPDATE_TASK: 'UPDATE_TASK',
   DELETE_TASK: 'DELETE_TASK',
   TOGGLE_TASK_COMPLETE: 'TOGGLE_TASK_COMPLETE',
+  ADD_SUBTASK: 'ADD_SUBTASK',
+  UPDATE_SUBTASK: 'UPDATE_SUBTASK',
+  DELETE_SUBTASK: 'DELETE_SUBTASK',
+  TOGGLE_SUBTASK_COMPLETE: 'TOGGLE_SUBTASK_COMPLETE',
   
   // Class actions
   ADD_CLASS: 'ADD_CLASS',
@@ -196,6 +223,77 @@ function appReducer(state, action) {
       return {
         ...state,
         tasks: [...state.tasks, { ...action.payload, id: Date.now() }]
+      }
+    
+    case ActionTypes.ADD_SUBTASK:
+      return {
+        ...state,
+        tasks: state.tasks.map(task =>
+          task.id === action.payload.taskId
+            ? {
+                ...task,
+                subtasks: [
+                  ...(task.subtasks || []),
+                  { ...action.payload.subtask, id: Date.now() }
+                ]
+              }
+            : task
+        )
+      }
+    
+    case ActionTypes.UPDATE_SUBTASK:
+      return {
+        ...state,
+        tasks: state.tasks.map(task =>
+          task.id === action.payload.taskId
+            ? {
+                ...task,
+                subtasks: (task.subtasks || []).map(subtask =>
+                  subtask.id === action.payload.subtask.id
+                    ? { ...subtask, ...action.payload.subtask }
+                    : subtask
+                )
+              }
+            : task
+        )
+      }
+    
+    case ActionTypes.DELETE_SUBTASK:
+      return {
+        ...state,
+        tasks: state.tasks.map(task =>
+          task.id === action.payload.taskId
+            ? {
+                ...task,
+                subtasks: (task.subtasks || []).filter(
+                  subtask => subtask.id !== action.payload.subtaskId
+                )
+              }
+            : task
+        )
+      }
+    
+    case ActionTypes.TOGGLE_SUBTASK_COMPLETE:
+      return {
+        ...state,
+        tasks: state.tasks.map(task =>
+          task.id === action.payload.taskId
+            ? {
+                ...task,
+                subtasks: (task.subtasks || []).map(subtask =>
+                  subtask.id === action.payload.subtaskId
+                    ? {
+                        ...subtask,
+                        completed: !subtask.completed,
+                        completedAt: !subtask.completed
+                          ? new Date().toISOString()
+                          : null
+                      }
+                    : subtask
+                )
+              }
+            : task
+        )
       }
     
     case ActionTypes.UPDATE_TASK:
@@ -348,6 +446,11 @@ export function AppProvider({ children }) {
     updateTask: (task) => dispatch({ type: ActionTypes.UPDATE_TASK, payload: task }),
     deleteTask: (id) => dispatch({ type: ActionTypes.DELETE_TASK, payload: id }),
     toggleTaskComplete: (id) => dispatch({ type: ActionTypes.TOGGLE_TASK_COMPLETE, payload: id }),
+    addSubtask: (taskId, subtask) => dispatch({ type: ActionTypes.ADD_SUBTASK, payload: { taskId, subtask } }),
+    updateSubtask: (taskId, subtask) => dispatch({ type: ActionTypes.UPDATE_SUBTASK, payload: { taskId, subtask } }),
+    deleteSubtask: (taskId, subtaskId) => dispatch({ type: ActionTypes.DELETE_SUBTASK, payload: { taskId, subtaskId } }),
+    toggleSubtaskComplete: (taskId, subtaskId) =>
+      dispatch({ type: ActionTypes.TOGGLE_SUBTASK_COMPLETE, payload: { taskId, subtaskId } }),
     
     addClass: (classItem) => dispatch({ type: ActionTypes.ADD_CLASS, payload: classItem }),
     updateClass: (classItem) => dispatch({ type: ActionTypes.UPDATE_CLASS, payload: classItem }),

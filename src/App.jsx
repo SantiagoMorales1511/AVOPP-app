@@ -7,6 +7,8 @@ import WeeklySummary from './components/WeeklySummary'
 import Challenges from './components/Challenges'
 import TeacherPanel from './components/TeacherPanel'
 import BottomNavigation from './components/BottomNavigation'
+import NotificationsCenter from './components/NotificationsCenter'
+import ProductivityReport from './components/ProductivityReport'
 
 function AppContent() {
   const [currentView, setCurrentView] = useState('dashboard')
@@ -25,6 +27,10 @@ function AppContent() {
         return <WeeklySummary />
       case 'challenges':
         return <Challenges />
+      case 'notifications':
+        return <NotificationsCenter />
+      case 'report':
+        return <ProductivityReport />
       case 'teacher':
         return <TeacherPanel />
       default:
